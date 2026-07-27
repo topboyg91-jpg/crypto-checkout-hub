@@ -135,56 +135,57 @@ GRANT ALL ON public.order_items TO service_role;
 ALTER TABLE public.order_items ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "order_items open" ON public.order_items FOR ALL TO anon, authenticated USING (true) WITH CHECK (true);
 
+
 -- SEED CATEGORIES
 INSERT INTO public.categories (name, slug, group_label, sort_order) VALUES
-  ('Amphetamine','amphetamine','Hard Drugs',1),
-  ('Cocaine','cocaine','Hard Drugs',2),
-  ('Heroin','heroin','Hard Drugs',3),
-  ('Meth','meth','Hard Drugs',4),
-  ('Opium','opium','Hard Drugs',5),
-  ('Other','other','Hard Drugs',6),
-  ('Cannabis','cannabis','Soft Drugs',7),
-  ('DMT','dmt','Soft Drugs',8),
-  ('LSD','lsd','Soft Drugs',9),
-  ('MDMA','mdma','Soft Drugs',10);
+  ('Espresso Blends','espresso-blends','Coffee',1),
+  ('Single Origin','single-origin','Coffee',2),
+  ('Decaf','decaf','Coffee',3),
+  ('Cocoa','cocoa','Coffee',4),
+  ('Green Tea','green-tea','Tea',5),
+  ('Black Tea','black-tea','Tea',6),
+  ('Herbal Infusions','herbal-infusions','Tea',7),
+  ('Whole Spices','whole-spices','Spices',8),
+  ('Ground Spices','ground-spices','Spices',9),
+  ('Rare & Reserve','rare-reserve','Spices',10);
 
 -- SEED PRODUCTS
 INSERT INTO public.products (name, slug, description, category_id, sort_order)
 SELECT v.name, v.slug, v.description, c.id, v.sort_order
 FROM (VALUES
-  ('Buy LSD Powder Online – LSD Powder For Sale','lsd-powder','High purity LSD powder, laboratory tested and discreetly packaged.','lsd',1),
-  ('Buy LSD Blotters Online','lsd-blotters','Classic blotter tabs, accurately dosed and sealed for transit.','lsd',2),
-  ('Buy 50 mcg LSD Tablets Online – LSD Tablets','lsd-tablets','Pressed 50 mcg tablets, consistent dosing per unit.','lsd',3),
-  ('LSD Liquid Online (25mg/10ml) – LSD Drops','lsd-liquid','Liquid LSD in a sealed dropper vial, 25mg per 10ml.','lsd',4),
-  ('Buy JWH-018 Powder Online, AM-678 For Sale','jwh-018-powder','Research grade JWH-018 (AM-678) powder.','other',5),
-  ('Buy Anadrol (Oxymetholone)','anadrol-oxymetholone','Oxymetholone, pharmaceutical grade, sealed packaging.','other',6),
-  ('Buy Pure Cocaine Powder Online','cocaine-powder','Uncut, unpowderized cocaine delivered in chunks and rocks.','cocaine',7),
-  ('Buy Crystal Meth Online','crystal-meth','High grade crystal, double sealed with Mylar barrier.','meth',8),
-  ('Buy Heroin Powder Online','heroin-powder','White heroin powder, discreetly packaged.','heroin',9),
-  ('Buy Afghan Opium Online','afghan-opium','Raw Afghan opium, vacuum sealed.','opium',10),
-  ('Buy MDMA Crystals Online','mdma-crystals','Champagne MDMA crystals, lab tested.','mdma',11),
-  ('Buy DMT Powder Online','dmt-powder','N,N-DMT crystalline powder.','dmt',12),
-  ('Buy Cannabis Buds Online','cannabis-buds','Indoor grown premium buds, smell proof packaging.','cannabis',13),
-  ('Buy Amphetamine Paste Online','amphetamine-paste','Amphetamine paste, high purity.','amphetamine',14)
+  ('Ethiopia Yirgacheffe – Washed Single Origin','ethiopia-yirgacheffe','Bright, floral washed lot with jasmine and bergamot. Roasted to order.','single-origin',1),
+  ('Colombia Huila – Whole Bean','colombia-huila','Balanced and caramel-sweet with a soft red apple finish.','single-origin',2),
+  ('Kenya AA Nyeri – Reserve Lot','kenya-aa-nyeri','Blackcurrant and grapefruit acidity, a classic Kenyan cup.','single-origin',3),
+  ('House Espresso Blend No. 4','house-espresso-4','Chocolate, hazelnut and dried fig. Built for milk drinks.','espresso-blends',4),
+  ('Swiss Water Decaf – Brazil','swiss-water-decaf-brazil','Chemical-free decaffeination, nutty and low acid.','decaf',5),
+  ('Single Origin Cocoa Nibs – Ecuador','cocoa-nibs-ecuador','Roasted and cracked Arriba Nacional nibs for brewing and baking.','cocoa',6),
+  ('Uji Sencha – First Flush','uji-sencha','Grassy, umami-rich Japanese green tea from Kyoto.','green-tea',7),
+  ('Jasmine Pearls – Hand Rolled','jasmine-pearls','Green tea pearls scented over fresh jasmine blossom.','green-tea',8),
+  ('Assam Second Flush – Loose Leaf','assam-second-flush','Malty and full bodied, excellent with milk.','black-tea',9),
+  ('Chamomile Blossom – Whole Flower','chamomile-blossom','Egyptian whole-flower chamomile, honeyed and calming.','herbal-infusions',10),
+  ('Tellicherry Black Peppercorns','tellicherry-peppercorns','Late-harvest Indian peppercorns, bold and citrusy.','whole-spices',11),
+  ('Ceylon Cinnamon Quills','ceylon-cinnamon-quills','True cinnamon quills, delicate and sweet.','whole-spices',12),
+  ('Smoked Sweet Paprika – La Vera','smoked-paprika-la-vera','Oak-smoked Spanish paprika, deep red and fragrant.','ground-spices',13),
+  ('Saffron Threads – Super Negin','saffron-super-negin','All-red Super Negin threads, graded for aroma and colour.','rare-reserve',14)
 ) AS v(name, slug, description, cat_slug, sort_order)
 JOIN public.categories c ON c.slug = v.cat_slug;
 
 -- SEED GRAM PRICES
 INSERT INTO public.product_prices (product_id, grams, price, sort_order)
-SELECT p.id, g.grams, round((g.grams * r.per_gram)::numeric, 0), g.sort_order
+SELECT p.id, g.grams, round((g.grams * r.per_gram)::numeric, 2), g.sort_order
 FROM public.products p
 JOIN (VALUES
-  ('lsd-powder', 55::numeric),('lsd-blotters', 45),('lsd-tablets', 32),('lsd-liquid', 48),
-  ('jwh-018-powder', 42),('anadrol-oxymetholone', 40),('cocaine-powder', 60),('crystal-meth', 38),
-  ('heroin-powder', 65),('afghan-opium', 30),('mdma-crystals', 28),('dmt-powder', 70),
-  ('cannabis-buds', 12),('amphetamine-paste', 22)
+  ('ethiopia-yirgacheffe', 0.09::numeric),('colombia-huila', 0.07),('kenya-aa-nyeri', 0.11),('house-espresso-4', 0.06),
+  ('swiss-water-decaf-brazil', 0.08),('cocoa-nibs-ecuador', 0.05),('uji-sencha', 0.22),('jasmine-pearls', 0.26),
+  ('assam-second-flush', 0.12),('chamomile-blossom', 0.10),('tellicherry-peppercorns', 0.09),('ceylon-cinnamon-quills', 0.14),
+  ('smoked-paprika-la-vera', 0.08),('saffron-super-negin', 9.50)
 ) AS r(slug, per_gram) ON r.slug = p.slug
-CROSS JOIN (VALUES (5::numeric,1),(10,2),(25,3),(50,4),(100,5)) AS g(grams, sort_order);
+CROSS JOIN (VALUES (25::numeric,1),(50,2),(100,3),(250,4),(500,5)) AS g(grams, sort_order);
 
 -- SEED PAYMENT METHODS
 INSERT INTO public.payment_methods (label, code, address, network, gateway_note, sort_order) VALUES
   ('Bitcoin (BTC)','BTC','bc1qexampleaddressreplaceinadmin0000000','Bitcoin','Bitcoin payment gateway',1),
-  ('Monero (XMR)','XMR','44ExampleMoneroAddressReplaceInAdmin0000000000','Monero','Monero payment gateway',2);
+  ('USD Coin (USDC)','USDC','0xExampleUsdcAddressReplaceInAdmin000000','Ethereum','USDC payment gateway',2);
 
 -- SEED SHIPPING
 INSERT INTO public.shipping_options (label, description, price, is_default, sort_order) VALUES
@@ -193,11 +194,11 @@ INSERT INTO public.shipping_options (label, description, price, is_default, sort
 
 -- SEED SETTINGS
 INSERT INTO public.site_settings (key, value, label, sort_order) VALUES
-  ('store_name','Ui Rebuild Plus','Store name',1),
-  ('tagline','Discreet worldwide delivery','Tagline',2),
-  ('contact_email','support@example.com','Contact email',3),
+  ('store_name','Gramory','Store name',1),
+  ('tagline','Specialty coffee, tea and spice by the gram','Tagline',2),
+  ('contact_email','support@gramory.example','Contact email',3),
   ('currency_symbol','$','Currency symbol',4),
-  ('footer_text','© Ui Rebuild Plus — discreet packaging on every order.','Footer text',5),
+  ('footer_text','© Gramory — roasted, blended and packed to order.','Footer text',5),
   ('checkout_notice','Since your browser does not support JavaScript, or it is disabled, please ensure you click the Update Totals button before placing your order. You may be charged more than the amount stated above if you fail to do so.','Checkout notice',6),
   ('search_placeholder','Search…','Search placeholder',7);
 
@@ -211,30 +212,24 @@ INSERT INTO public.content_pages (slug, title, body, sort_order) VALUES
 **Eastern Europe and Russia**: 8-12 days
 **Australia & New Zealand**: 15-31 days
 **AFRICA**: 12-27 days
-**Zero Liability Policy:** We will not disclose success rates, do not ask.
 
-The vast majority of packages make it That said, **there are no reships in case of seizure**.
+Roasting happens the morning your order ships, so coffee leaves us at peak freshness.
 
-International Parcel Orders get **tracking if email is supplied during order**. For orders International please use what you know that has been sent to that address or **follow below:**
+Every international parcel gets **tracking if an email is supplied during order**. Please format your address as follows:
 **Line 1:** Name
 **Line 2:** Street Address
 **Line 3:** (If Needed) Suburb, Locality, Or extended Street Address
-**Line 4:** City and Postal Code Line 5: Country',1),
+**Line 4:** City and Postal Code
+**Line 5:** Country',1),
 ('shipping-and-packaging','SHIPPING AND PACKAGING',
-'We are a team With the following structure for shipping. Product is sourced from South America to the United States and to Europe through Africa over land. Everything and anything is possible with us, from grams till containers full of product.
+'We work directly with growers and cooperatives. Coffee is sourced from South and Central America and East Africa, tea from Japan, China and India, and spices from India, Sri Lanka and Spain.
 
-We know what we are doing and what we can and can not do, therefore we can give you honest answers and deliver you with outstanding service!.
+Everything is bought at origin, imported through our own customs broker and stored in a temperature-controlled warehouse until you order. Nothing sits on a shelf for months.
 
-All orders will be shipped out throughout US which makes it allot saver and easier to send. Everything will be packed with the necessary equipment and material specially selected for your country to ensure arrival in secrecy.
+All orders ship from the United States or Western Europe, whichever is closer to you. Small orders travel in resealable, food-grade pouches with a one-way degassing valve, packed inside a padded mailer with a printed label.
 
-Packages get shipped from the United States or from Western Europe to our buyers we do not disclose exact locations. Do not ask us ridiculous things such as sending yachts or planes worth of cocaine… Small orders Envelops Packaged professionally with a discreet printed label. Time and care are given to every order regardless of size.
+Larger orders are packed in kraft boxes with recycled fill. Wholesale volumes (25kg and up) ship on pallets with a freight partner — contact us before ordering at that scale so we can quote the correct rate.
 
-All of our packs are double sealed in plastic and then a Mylar barrier is used too. We do not crush or powderize our cocaine and it comes to you in chunks, rocks, pebbles and some powder with our cocaine orders.
-
-Bulk orders Standard stealth, printed label, medium sized box from a franchised company .
-
-Large electronic appliances for bulk packages We will send your bulk order (50kg-100kg)with freight/parcel shipping – International Freight Shipping companies based in Peru or The US depending on your location
-
-We conceal the product as either clothes,office supplies,medicine packets or regular electronics with hidden compartments All of these orders are sent with a decoy.
+Every pouch is nitrogen-flushed and heat-sealed, then labelled with the lot, roast or harvest date and the exact weight. Spices are packed in amber-tinted pouches to protect them from light.
 
 Delivery estimates exclude weekends and national holidays.',2);
