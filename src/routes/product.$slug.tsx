@@ -12,7 +12,7 @@ export const Route = createFileRoute("/product/$slug")({
     return {
       meta: [
         { title },
-        { name: "description", content: "Choose a weight in grams and check out with crypto. Discreet packaging." },
+        { name: "description", content: "Choose a weight in grams and check out with crypto. Sealed for freshness." },
         { property: "og:title", content: title },
         { property: "og:description", content: "Choose a weight in grams and check out with crypto." },
         { property: "og:type", content: "product" },

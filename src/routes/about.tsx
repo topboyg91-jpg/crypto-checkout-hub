@@ -6,8 +6,8 @@ import { categoriesQuery } from "@/lib/store";
 export const Route = createFileRoute("/about")({
   head: () => ({
     meta: [
-      { title: "About us — who we are and how we ship" },
-      { name: "description", content: "A small team shipping worldwide with discreet packaging and crypto-only payment." },
+      { title: "About us — Gramory specialty coffee, tea & spice" },
+      { name: "description", content: "A small team roasting, blending and shipping specialty coffee, tea and spices worldwide, with crypto checkout." },
       { property: "og:title", content: "About us" },
       { property: "og:description", content: "Who we are and how the store works." },
     ],
@@ -21,11 +21,11 @@ function AboutPage() {
   const groups = [...new Set((categories ?? []).map((c) => c.group_label))];
 
   return (
-    <InfoPage title="About us" lead="Straightforward ordering, discreet packaging, worldwide reach.">
+    <InfoPage title="About us" lead="Straightforward ordering, careful packing, worldwide reach.">
       <InfoCard title="What we do">
         <p>
           {settings.store_name ?? "We"} ships worldwide from stock held in the United States and Western Europe. Every
-          product is priced and sold by weight in grams, so you order exactly what you need.
+          product is priced and sold by weight in grams, so you order exactly the amount you need.
         </p>
       </InfoCard>
       <InfoCard title="Our catalogue">
