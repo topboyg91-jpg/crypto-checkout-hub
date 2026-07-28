@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Trash2 } from "lucide-react";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { resolveImageUrl } from "@/lib/product-image";
 
 export type FieldType = "text" | "number" | "textarea" | "boolean" | "select" | "image";
 
