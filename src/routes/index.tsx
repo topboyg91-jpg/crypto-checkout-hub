@@ -63,10 +63,7 @@ function ShopPage() {
             params={{ slug: p.slug }}
             className="bg-card/95 border border-border rounded p-3 text-center hover:shadow-lg transition"
           >
-            <div
-              className="aspect-[4/3] rounded mb-3"
-              style={{ background: p.image_url ? `center/cover url(${p.image_url})` : productGradient(p.name) }}
-            />
+            <ProductImage src={p.image_url} name={p.name} className="block w-full aspect-[4/3] rounded mb-3" />
             <h3 className="text-primary font-semibold text-sm leading-tight">{p.name}</h3>
             <p className="text-xs text-muted-foreground mt-1">{priceRange(p, symbol)}</p>
           </Link>
