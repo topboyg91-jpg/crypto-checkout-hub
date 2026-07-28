@@ -3,7 +3,7 @@ import { Trash2 } from "lucide-react";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
-export type FieldType = "text" | "number" | "textarea" | "boolean" | "select";
+export type FieldType = "text" | "number" | "textarea" | "boolean" | "select" | "image";
 
 export type ColumnDef = {
   key: string;
