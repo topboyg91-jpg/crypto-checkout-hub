@@ -4,11 +4,11 @@ import { Mail, Search, ShoppingCart } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import leavesBg from "@/assets/leaves-bg.jpg";
 import { useCart } from "@/lib/cart";
+import { ProductImage } from "@/lib/product-image";
 import {
   categoriesQuery,
   money,
   priceRange,
-  productGradient,
   productsQuery,
   settingsMap,
   settingsQuery,
@@ -207,12 +207,7 @@ export function ShopSidebar() {
             .map((p) => (
               <li key={p.id}>
                 <Link to="/product/$slug" params={{ slug: p.slug }} className="flex gap-3 group">
-                  <span
-                    className="h-12 w-12 shrink-0 rounded"
-                    style={{
-                      background: p.image_url ? `center/cover url(${p.image_url})` : productGradient(p.name),
-                    }}
-                  />
+                  <ProductImage src={p.image_url} name={p.name} className="block h-12 w-12 shrink-0 rounded" />
                   <span className="min-w-0">
                     <span className="block text-primary font-semibold text-[13px] leading-tight group-hover:underline">
                       {p.name}
