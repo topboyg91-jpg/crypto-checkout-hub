@@ -1,7 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { PageWithSidebar, useSettings } from "@/components/site-chrome";
-import { categoriesQuery, priceRange, productGradient, productsQuery } from "@/lib/store";
+import { ProductImage } from "@/lib/product-image";
+import { categoriesQuery, priceRange, productsQuery } from "@/lib/store";
 
 type ShopSearch = { q?: string; category?: string };
 
