@@ -115,6 +115,9 @@ export type Database = {
           order_number: string
           payment_address: string
           payment_code: string
+          payment_confirmed_at: string | null
+          payment_reported_at: string | null
+          payment_txid: string
           shipping_label: string
           shipping_price: number
           status: string
@@ -132,6 +135,9 @@ export type Database = {
           order_number: string
           payment_address?: string
           payment_code?: string
+          payment_confirmed_at?: string | null
+          payment_reported_at?: string | null
+          payment_txid?: string
           shipping_label?: string
           shipping_price?: number
           status?: string
@@ -149,6 +155,9 @@ export type Database = {
           order_number?: string
           payment_address?: string
           payment_code?: string
+          payment_confirmed_at?: string | null
+          payment_reported_at?: string | null
+          payment_txid?: string
           shipping_label?: string
           shipping_price?: number
           status?: string

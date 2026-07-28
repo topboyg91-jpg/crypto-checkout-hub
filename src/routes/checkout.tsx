@@ -3,6 +3,8 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import deliveryMap from "@/assets/express-delivery-map.jpg";
 import { PageWithSidebar, useSettings } from "@/components/site-chrome";
+import { CopyableAddress, PaymentQr } from "@/components/crypto-payment";
+import { PaymentConfirmForm } from "@/components/payment-confirm";
 import { useCart, type PlacedOrder } from "@/lib/cart";
 import { gramsLabel, money, paymentMethodsQuery, shippingOptionsQuery } from "@/lib/store";
 
@@ -98,18 +100,28 @@ function CheckoutPage() {
           Send exactly {money(placed.total, symbol)} worth of {placed.paymentCode} to the address below. Updates go to{" "}
           {placed.email}.
         </p>
-        <div className="mt-6 bg-card/95 border border-border rounded p-6 space-y-3 text-sm">
+        <div className="mt-6 bg-card/95 border border-border rounded p-6 space-y-4 text-sm">
           <div>
             <p className="text-muted-foreground">Order number</p>
             <p className="text-lg font-semibold text-primary">{placed.orderNumber}</p>
           </div>
-          <div>
-            <p className="text-muted-foreground">{placed.paymentCode} address</p>
-            <p className="font-mono break-all">{placed.paymentAddress}</p>
+          <div className="flex flex-wrap gap-6">
+            <div className="min-w-0 flex-1 space-y-3">
+              <div className="min-w-0">
+                <p className="text-muted-foreground">{placed.paymentCode} address</p>
+                <div className="mt-1">
+                  <CopyableAddress value={placed.paymentAddress} />
+                </div>
+              </div>
+              <div>
+                <p className="text-muted-foreground">Amount due</p>
+                <p className="font-semibold">{money(placed.total, symbol)}</p>
+              </div>
+            </div>
+            <PaymentQr code={placed.paymentCode} address={placed.paymentAddress} />
           </div>
-          <div>
-            <p className="text-muted-foreground">Amount due</p>
-            <p className="font-semibold">{money(placed.total, symbol)}</p>
+          <div className="border-t border-border pt-4">
+            <PaymentConfirmForm orderNumber={placed.orderNumber} />
           </div>
         </div>
         <Link to="/order-tracking" className="mt-6 inline-block text-sm text-primary hover:underline">
@@ -239,9 +251,15 @@ function CheckoutPage() {
               </label>
               {paymentId === p.id && (
                 <div className="mt-2 bg-muted/60 border border-border rounded px-3 py-2 text-xs text-muted-foreground">
-                  <p>{p.gateway_note || `${p.label} payment gateway`}</p>
-                  {p.address && <p className="mt-1 font-mono break-all text-foreground/80">{p.address}</p>}
-                  {p.network && <p className="mt-1">Network: {p.network}</p>}
+                  <div className="flex flex-wrap items-start gap-4">
+                    <div className="min-w-0 flex-1 space-y-2">
+                      <p>{p.gateway_note || `${p.label} payment gateway`}</p>
+                      {p.address && <CopyableAddress value={p.address} />}
+                      {p.network && <p>Network: {p.network}</p>}
+                      <p>Amount to send: {money(total, symbol)}</p>
+                    </div>
+                    {p.address && <PaymentQr code={p.code} address={p.address} size={116} />}
+                  </div>
                 </div>
               )}
             </div>

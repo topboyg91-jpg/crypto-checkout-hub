@@ -267,7 +267,14 @@ function PagesPanel() {
   );
 }
 
-const STATUSES = ["Awaiting payment", "Payment confirmed", "Shipped", "Delivered", "Cancelled"];
+const STATUSES = [
+  "Awaiting payment",
+  "Payment submitted — verifying",
+  "Payment confirmed",
+  "Shipped",
+  "Delivered",
+  "Cancelled",
+];
 
 function OrdersPanel() {
   const { data: orders } = useQuery(ordersQuery);
@@ -346,6 +353,7 @@ function OrdersPanel() {
 
 function OrderDetails({ id }: { id: string }) {
   const { data: orders } = useQuery(ordersQuery);
+  const { update } = useTableMutations("orders", [["orders"]]);
   const { data: items } = useQuery({
     queryKey: ["order_items", id],
     queryFn: async () => {
@@ -370,6 +378,35 @@ function OrderDetails({ id }: { id: string }) {
       <p className="font-mono break-all">
         {order.payment_code} → {order.payment_address}
       </p>
+      {order.payment_reported_at && (
+        <p className="text-muted-foreground">
+          Customer reported payment {new Date(order.payment_reported_at).toLocaleString()}
+          {order.payment_txid ? (
+            <>
+              {" "}
+              — tx <span className="font-mono break-all text-foreground">{order.payment_txid}</span>
+            </>
+          ) : null}
+        </p>
+      )}
+      {order.payment_confirmed_at ? (
+        <p className="text-primary font-semibold">
+          Payment confirmed {new Date(order.payment_confirmed_at).toLocaleString()}
+        </p>
+      ) : (
+        <button
+          onClick={() =>
+            update.mutate({
+              id: order.id,
+              idKey: "id",
+              patch: { payment_confirmed_at: new Date().toISOString(), status: "Payment confirmed" },
+            })
+          }
+          className="px-3 py-1 border border-primary text-primary rounded hover:bg-primary hover:text-primary-foreground transition"
+        >
+          Mark payment confirmed
+        </button>
+      )}
       <ul className="list-disc pl-5">
         {(items ?? []).map((i) => (
           <li key={i.id}>

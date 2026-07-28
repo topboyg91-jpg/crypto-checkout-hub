@@ -68,6 +68,9 @@ export type OrderRow = {
   total: number;
   payment_code: string;
   payment_address: string;
+  payment_txid: string | null;
+  payment_reported_at: string | null;
+  payment_confirmed_at: string | null;
   status: string;
   created_at: string;
 };
