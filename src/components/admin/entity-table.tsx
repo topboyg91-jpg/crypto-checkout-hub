@@ -2,8 +2,9 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Trash2 } from "lucide-react";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { resolveImageUrl } from "@/lib/product-image";
 
-export type FieldType = "text" | "number" | "textarea" | "boolean" | "select";
+export type FieldType = "text" | "number" | "textarea" | "boolean" | "select" | "image";
 
 export type ColumnDef = {
   key: string;
@@ -226,6 +227,70 @@ function CellInput({
     className: "w-full min-w-28 px-2 py-1 border border-border rounded bg-background",
   };
 
+  if (column.type === "image") return <ImageCell value={current} common={common} onCommit={commit} />;
   if (column.type === "textarea") return <textarea rows={3} {...common} />;
   return <input type={column.type === "number" ? "number" : "text"} step="any" {...common} />;
+}
+
+/** Image field: upload a file to storage, or paste a link. Shows a live preview. */
+function ImageCell({
+  value,
+  common,
+  onCommit,
+}: {
+  value: string;
+  common: Record<string, unknown>;
+  onCommit: (raw: string) => void;
+}) {
+  const [busy, setBusy] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const preview = resolveImageUrl(value);
+
+  const upload = async (file: File) => {
+    setBusy(true);
+    setUploadError(null);
+    try {
+      const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
+      const path = `${crypto.randomUUID()}.${ext}`;
+      const { error } = await supabase.storage
+        .from("product-images")
+        .upload(path, file, { contentType: file.type || undefined, upsert: false });
+      if (error) throw error;
+      onCommit(`/api/public/product-image/${path}`);
+    } catch (e) {
+      setUploadError(e instanceof Error ? e.message : "Upload failed");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div className="space-y-1 min-w-56">
+      <div className="flex items-center gap-2">
+        {preview ? (
+          <img src={preview} alt="" className="h-10 w-10 rounded object-cover border border-border" />
+        ) : (
+          <span className="h-10 w-10 rounded border border-dashed border-border" />
+        )}
+        {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+        <input type="text" step="any" placeholder="Paste image link" {...(common as any)} />
+      </div>
+      <label className="flex items-center gap-2 text-[11px] text-muted-foreground">
+        <span className="px-2 py-1 border border-border rounded cursor-pointer hover:border-primary">
+          {busy ? "Uploading…" : "Upload image"}
+        </span>
+        <input
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            e.target.value = "";
+            if (file) void upload(file);
+          }}
+        />
+      </label>
+      {uploadError && <p className="text-[11px] text-destructive">{uploadError}</p>}
+    </div>
+  );
 }
