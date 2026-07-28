@@ -1,6 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { PageWithSidebar, useSettings } from "@/components/site-chrome";
+import { CopyableAddress, PaymentQr } from "@/components/crypto-payment";
+import { PaymentConfirmForm } from "@/components/payment-confirm";
 import { supabase } from "@/integrations/supabase/client";
 import { gramsLabel, money, type OrderRow } from "@/lib/store";
 
@@ -126,9 +128,34 @@ function OrderTrackingPage() {
             </div>
             <div className="min-w-0">
               <p className="text-muted-foreground">Payment address</p>
-              <p className="font-mono break-all text-xs">{order.payment_address || "—"}</p>
+              {order.payment_address ? (
+                <div className="mt-1">
+                  <CopyableAddress value={order.payment_address} />
+                </div>
+              ) : (
+                <p>—</p>
+              )}
             </div>
           </div>
+
+          {order.payment_address && !order.payment_confirmed_at && (
+            <div className="border-t border-border pt-4 flex flex-wrap gap-6">
+              <div className="min-w-0 flex-1">
+                <PaymentConfirmForm
+                  orderNumber={order.order_number}
+                  initialTxid={order.payment_txid ?? ""}
+                  initialReported={Boolean(order.payment_reported_at)}
+                />
+              </div>
+              <PaymentQr code={order.payment_code} address={order.payment_address} size={116} />
+            </div>
+          )}
+
+          {order.payment_confirmed_at && (
+            <p className="border-t border-border pt-4 text-xs text-primary font-semibold">
+              Payment confirmed on {new Date(order.payment_confirmed_at).toLocaleString()}
+            </p>
+          )}
         </div>
       )}
     </PageWithSidebar>
