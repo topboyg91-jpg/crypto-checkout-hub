@@ -2,8 +2,17 @@ import { createFileRoute } from "@tanstack/react-router";
 import type {} from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 
-// TODO: replace with your project URL once a project name or custom domain is set.
-const BASE_URL = "";
+// Derived per-request so the same build works on a .onion address, a clearnet
+// domain, or localhost without rebaking a hostname into the bundle.
+function baseUrlFrom(request: Request): string {
+  const url = new URL(request.url);
+  const forwardedHost = request.headers.get("x-forwarded-host");
+  const forwardedProto = request.headers.get("x-forwarded-proto");
+  const host = forwardedHost ?? url.host;
+  // Tor hidden services are plain HTTP behind the onion transport.
+  const proto = forwardedProto ?? (host.endsWith(".onion") ? "http" : url.protocol.replace(":", ""));
+  return `${proto}://${host}`;
+}
 
 interface SitemapEntry {
   path: string;
@@ -14,7 +23,8 @@ interface SitemapEntry {
 export const Route = createFileRoute("/sitemap.xml")({
   server: {
     handlers: {
-      GET: async () => {
+      GET: async ({ request }) => {
+        const BASE_URL = baseUrlFrom(request);
         const { data } = await supabase
           .from("products")
           .select("slug")
