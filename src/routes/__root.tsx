@@ -76,18 +76,32 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "GiftShop — Digital Gift Cards, Instant Delivery" },
-      { name: "description", content: "Buy digital gift cards for Amazon, Netflix, Spotify, Steam and more." },
-      { property: "og:title", content: "GiftShop — Digital Gift Cards" },
-      { property: "og:description", content: "Digital gift cards delivered instantly by email." },
+      { title: "Gramory — Specialty Coffee, Tea & Spices by the Gram" },
+      {
+        name: "description",
+        content:
+          "Single-origin coffee, loose-leaf tea and whole spices sold by the gram. Crypto checkout, flat-rate shipping.",
+      },
+      { property: "og:title", content: "Gramory — Specialty Coffee, Tea & Spices" },
+      {
+        property: "og:description",
+        content: "Single-origin coffee, loose-leaf tea and whole spices sold by the gram.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      // Tor Browser sends no Referer cross-origin anyway; enforce it for same-origin too.
+      { name: "referrer", content: "no-referrer" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
-      { rel: "preconnect", href: "https://fonts.googleapis.com" },
-      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
-      { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Pacifico&display=swap" },
+      // Brand font is self-hosted — no third-party origins are contacted.
+      {
+        rel: "preload",
+        as: "font",
+        type: "font/woff2",
+        href: "/fonts/pacifico-latin.woff2",
+        crossOrigin: "anonymous",
+      },
       { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
     ],
   }),
