@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Trash2 } from "lucide-react";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { resolveImageUrl } from "@/lib/product-image";
+import { ProductImage } from "@/lib/product-image";
 
 export type FieldType = "text" | "number" | "textarea" | "boolean" | "select" | "image";
 
@@ -233,6 +233,34 @@ function CellInput({
 }
 
 /** Image field: upload a file to storage, or paste a link. Shows a live preview. */
+/**
+ * Downscale + re-encode in the browser so product images stay small.
+ * Small files matter a lot over Tor, where bandwidth is scarce.
+ */
+async function compressImage(file: File, maxSize = 1000, quality = 0.82) {
+  if (file.type === "image/svg+xml" || file.type === "image/gif") {
+    return { blob: file as Blob, ext: file.name.split(".").pop()?.toLowerCase() || "img" };
+  }
+  try {
+    const bitmap = await createImageBitmap(file);
+    const scale = Math.min(1, maxSize / Math.max(bitmap.width, bitmap.height));
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.round(bitmap.width * scale);
+    canvas.height = Math.round(bitmap.height * scale);
+    const ctx = canvas.getContext("2d");
+    if (!ctx) throw new Error("no canvas context");
+    ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+    bitmap.close?.();
+    const blob = await new Promise<Blob | null>((resolve) =>
+      canvas.toBlob(resolve, "image/webp", quality),
+    );
+    if (!blob) throw new Error("encode failed");
+    return { blob, ext: "webp" };
+  } catch {
+    return { blob: file as Blob, ext: file.name.split(".").pop()?.toLowerCase() || "jpg" };
+  }
+}
+
 function ImageCell({
   value,
   common,
@@ -244,19 +272,18 @@ function ImageCell({
 }) {
   const [busy, setBusy] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
-  const preview = resolveImageUrl(value);
 
   const upload = async (file: File) => {
     setBusy(true);
     setUploadError(null);
     try {
-      const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
-      const path = `${crypto.randomUUID()}.${ext}`;
+      const optimized = await compressImage(file);
+      const path = `${crypto.randomUUID()}.${optimized.ext}`;
       const { error } = await supabase.storage
         .from("product-images")
-        .upload(path, file, { contentType: file.type || undefined, upsert: false });
+        .upload(path, optimized.blob, { contentType: optimized.blob.type, upsert: false });
       if (error) throw error;
-      onCommit(`/api/public/product-image/${path}`);
+      onCommit(`storage:${path}`);
     } catch (e) {
       setUploadError(e instanceof Error ? e.message : "Upload failed");
     } finally {
@@ -267,11 +294,7 @@ function ImageCell({
   return (
     <div className="space-y-1 min-w-56">
       <div className="flex items-center gap-2">
-        {preview ? (
-          <img src={preview} alt="" className="h-10 w-10 rounded object-cover border border-border" />
-        ) : (
-          <span className="h-10 w-10 rounded border border-dashed border-border" />
-        )}
+        <ProductImage src={value} name="preview" className="h-10 w-10 rounded border border-border" />
         {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
         <input type="text" step="any" placeholder="Paste image link" {...(common as any)} />
       </div>
