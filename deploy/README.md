@@ -1,39 +1,52 @@
-# Static deployment (Tor hidden service)
+# Deployment (Kali / Debian Linux + Tor hidden service)
 
-Build a fully static site — no Node runtime, no SSR server:
+The site is a **pure static build** — plain HTML, CSS, JS and self-hosted fonts.
+There is no Node process, no SSR, no Nitro, no API routes and no backend service
+to keep running after the build. Nginx serves files; that is the whole runtime.
 
-```bash
-STATIC_BUILD=1 bun run build     # or: npm run build:static
-```
-
-Output: `dist/client/` — plain HTML, CSS, JS, self-hosted fonts. Every page is
-prerendered at build time, so the first paint needs zero JavaScript round-trips,
-which matters a lot on Tor.
-
-Serve it:
+## One command
 
 ```bash
-sudo cp -r dist/client/* /var/www/gramory/
-sudo cp deploy/nginx.conf /etc/nginx/sites-available/gramory
-sudo ln -sf /etc/nginx/sites-available/gramory /etc/nginx/sites-enabled/
-sudo nginx -t && sudo systemctl reload nginx
+sudo ./deploy.sh
 ```
 
-`/etc/tor/torrc`:
+That script does everything:
 
-```
-HiddenServiceDir /var/lib/tor/gramory/
-HiddenServicePort 80 127.0.0.1:8080
-```
+1. installs anything missing (Node.js 22, nginx, tor, curl)
+2. installs project dependencies (with automatic clean-and-retry on failure)
+3. runs `npm run build:static` → `dist/client/`
+4. publishes the files to `WEB_ROOT` (default `/var/www/gramory`)
+5. writes and enables the nginx site from `deploy/nginx.conf.template`
+6. writes a managed `HiddenServiceDir` block into `/etc/tor/torrc` (backing up
+   the original first) and restarts Tor
+7. verifies both ports respond and prints the local, LAN and `.onion` URLs
 
-Then `sudo systemctl restart tor` and read the address from
-`/var/lib/tor/gramory/hostname`.
+Ports in use are detected automatically: a rival `apache2`/`lighttpd` is stopped,
+anything else causes the script to shift to the next free port.
+
+Re-run the same command after any change — it is idempotent.
+
+## Configuration
+
+Everything comes from a single `.env` (copied from `.env.example` on first run):
+
+| Variable | Purpose |
+| --- | --- |
+| `VITE_SUPABASE_URL` | backend URL baked into the bundle |
+| `VITE_SUPABASE_PUBLISHABLE_KEY` | publishable key (safe in a static bundle) |
+| `SITE_NAME` | nginx site + hidden service name |
+| `WEB_ROOT` | where the built files are served from |
+| `HTTP_PORT` | clearnet / LAN port (default 80) |
+| `TOR_PORT` | loopback port the hidden service points at (default 8080) |
+| `HS_DIR` | Tor hidden service directory |
 
 ## Notes
 
 - Product pages with URL-safe slugs are prerendered to their own HTML file.
-  Anything else (and products added after the build) is served by the SPA
-  fallback in `nginx.conf` and rendered client-side.
-- Re-run the build whenever the catalog changes to refresh the prerendered HTML.
+  Anything else, and products added after the build, is served by the SPA
+  fallback and rendered client-side.
 - Product images uploaded in admin are downscaled to max 1000px WebP in the
-  browser before upload, so pages stay light over Tor.
+  browser, so pages stay light over Tor.
+- Fonts are self-hosted in `public/fonts/`; the build makes no clearnet
+  requests other than to your configured backend.
+- Onion address: `sudo cat /var/lib/tor/gramory/hostname`.
